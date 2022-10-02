@@ -5,11 +5,9 @@
 //  Created by Ilya Sokolov on 02.10.2022.
 //
 
-import Foundation
 import CoreData
 
 class StorageManager {
-    
     static let shared = StorageManager()
     private init() {}
     
@@ -30,11 +28,9 @@ class StorageManager {
             do {
                 try context.save()
             } catch {
-    
                 let nserror = error as NSError
                 fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
         }
     }
-    
 }

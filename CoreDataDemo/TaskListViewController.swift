@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import CoreData
 
 class TaskListViewController: UITableViewController {
     
@@ -14,12 +13,12 @@ class TaskListViewController: UITableViewController {
     private let context = StorageManager.shared.persistentContainer.viewContext
     private let cellID = "task"
     private var taskList: [Task] = []
-
+    
+    //MARK: - Override Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
-        
         setupNavigationBar()
     }
     
@@ -28,18 +27,14 @@ class TaskListViewController: UITableViewController {
         fetchData()
         tableView.reloadData()
     }
-
+    //MARK: - Private Methods
     private func setupNavigationBar() {
         title = "Task List"
         navigationController?.navigationBar.prefersLargeTitles = true
         
         let navBarAppearance = UINavigationBarAppearance()
-        
-        navBarAppearance.configureWithOpaqueBackground()
-        
         navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
         navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
-        
         navBarAppearance.backgroundColor = UIColor(
             red: 21/255,
             green: 101/255,
@@ -73,13 +68,17 @@ class TaskListViewController: UITableViewController {
         }
     }
 }
+//MARK: - Extensions
 
 extension TaskListViewController {
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView,
+                            numberOfRowsInSection section: Int) -> Int {
         taskList.count
     }
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellID, for: indexPath)
+    override func tableView(_ tableView: UITableView,
+                            cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellID,
+                                                 for: indexPath)
         
         let task = taskList[indexPath.row]
         var content = cell.defaultContentConfiguration()
@@ -87,14 +86,45 @@ extension TaskListViewController {
         cell.contentConfiguration = content
         return cell
     }
-}
-
-extension TaskListViewController {
+    // удаление строки
+    override func tableView(_ tableView: UITableView,
+                            commit editingStyle: UITableViewCell.EditingStyle,
+                            forRowAt indexPath: IndexPath) {
+        let task = taskList[indexPath.row]
+        context.delete(task)
+        taskList.remove(at: indexPath.row)
+        StorageManager.shared.saveContext()
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
+    // изменения строки
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let taskList = taskList[indexPath.row]
+        let alert = UIAlertController(title: "Update task",
+                                      message: "Would you like to update?",
+                                      preferredStyle: .alert)
+        let chageAction = UIAlertAction(title: "Update", style: .default)
+        { [unowned self] _ in
+            guard let task = alert.textFields?.first?.text else { return }
+            context.name = task
+            taskList.setValue(context.name , forKey: "name") // ключ из CoreDate
+            StorageManager.shared.saveContext()
+            tableView.reloadData()
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
+        alert.addAction(chageAction)
+        alert.addAction(cancelAction)
+        alert.addTextField()
+        
+        present(alert, animated: true)
+    }
+    
     private func showAlert(with title: String, and messege: String) {
-        let alert = UIAlertController(title: title, message: messege, preferredStyle: .alert)
+        let alert = UIAlertController(title: title, message: messege,
+                                      preferredStyle: .alert)
         
         let saveAction = UIAlertAction(title: "Save", style: .default) { _ in
-            guard let task = alert.textFields?.first?.text, !task.isEmpty else { return }
+            guard let task = alert.textFields?.first?.text,
+                  !task.isEmpty else { return }
             self.save(task)
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
