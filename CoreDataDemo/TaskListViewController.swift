@@ -10,8 +10,8 @@ import CoreData
 
 class TaskListViewController: UITableViewController {
     
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext // нужно удалить отсюда
-    
+    //MARK: - Private Properties
+    private let context = StorageManager.shared.persistentContainer.viewContext
     private let cellID = "task"
     private var taskList: [Task] = []
 

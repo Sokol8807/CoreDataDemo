@@ -10,7 +10,7 @@ import CoreData
 
 class TaskViewController: UIViewController {
     
-    private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    private let context = (UIApplication.shared.delegate as! StorageManager).persistentContainer.viewContext // изменил на StorageManager
 
     
     private lazy var taskTextField: UITextField = {
